@@ -1,7 +1,7 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
-#include <bathos/bathos.h>
+#include "common.h"
 
 /* THIS FILE ORIGINALLY COMES FROM THE LINUX KERNEL SOURCES */
 #include <stddef.h>
