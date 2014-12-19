@@ -107,3 +107,8 @@ void prepare_fd_events(fd_set *rd_fds, fd_set *wr_fds, fd_set *exc_fds)
 	for (t = EVT_FD_RD; t <= EVT_FD_EXC; t++)
 		do_prepare_fd_events(fds[t], &fd_events[t]);
 }
+
+int fd_event_get_fd(struct fd_event *e)
+{
+	return e->fd;
+}

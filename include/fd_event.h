@@ -26,4 +26,6 @@ extern void prepare_fd_events(fd_set *rd, fd_set *wr, fd_set *exc);
 
 extern int fd_events_init(void);
 
+extern int fd_event_get_fd(struct fd_event *);
+
 #endif /* __FD_EVENT_H__ */
