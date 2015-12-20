@@ -1,6 +1,5 @@
 /*
- * Copyright 2014 Dog Hunter SA
- * Author: Davide Ciminaghi <ciminaghi@gnudd.com>
+ * Copyright 2014 Davide Ciminaghi <ciminaghi@gnudd.com>
  *
  * GNU GPLv2 or later
  */
