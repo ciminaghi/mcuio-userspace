@@ -1,0 +1,104 @@
+Some ideas on a very simple proprietary MAC for an mcuio-over-radio demo.
+
+Time division, collision free.
+Packets are 32 bytes long (max).
+Star topology, one master and max 5 nodes. Each configured node has a
+different mac.
+
+One more mac is reserved for unconfigured nodes.
+
+MAC's are 5 bytes long.
+
+The master periodically talks to each configured slave by sending a beacon to
+the slave's hw address. The beacon packet contains an header (see below)
+and an attached [optional] mcuio request.
+
+If the beacon contains an mcuio request, the slave can reply to it.
+If no mcuio request is there, the slave has a time slot available for sending
+an asynchronous request message to the master (mcuio interrupt request). If
+the slave has no asynchronous message to send, it replies to the beacon with
+an alive packet to tell the master that it is still working and connected.
+
+In case the master does not receive any alive packet from a slave for a
+configurable time period, the slave is considered dead (link down).
+Similarly, if a configured slave does not receive any beacon within a
+configurable time, it leaves the network and goes back to the unconfigured
+state.
+
+The master periodically sends a beacon packet to the hw address
+reserved for unconfigured nodes. Any unconfigured node can reply with an
+association request containing the node's name. The master answers with an
+association reply packet, which contains the name of the slave and the
+hw address of the node within the network (the associaton reply is still sent
+to the hw address of unconfigured nodes). The node shall in turn reply with
+an alive message, signalling that the association reply has been received.
+
+
+
+General packet format:
+
+
+     0           1                    hdl                      hdl + 15
++----------+-- ..... --------------+-------------------------------+
+|	   |                       |                               |
+|  ptype   |      header data      |           cargo               |
+|  	   |   (depends on ptype)  |                               |
++----------+-- ..... --------------+-------------------------------+
+
+hdl = header data length (implicit)
+
+cargo: optional mcuio packet
+
+Some packet types:
+
+Beacon
+
+     0       1           9           10                           25
++-----------+-----------+-----------+-------------------------------+
+|           |           |           |                               |
+| ptype     | timestamp | cargo_type|           cargo               |
+|           |           |           |                               |
++-----------+-----------+-----------+-------------------------------+
+
+ptype = 0
+timestamp = 64bit timestamp
+cargo_type = type of cargo: 0 = no cargo, 1 = mcuio packet
+
+
+Alive
+ 0           1           2                          17
++-----------+-----------+-----------------------------+
+|           |           |                             |
+| ptype     | cargo_type|            cargo            |
+|           |           |                             |
++-----------+-----------+-----------------------------+
+
+ptype = 1
+cargo_type = type of cargo: 0 = no cargo, 1 = mcuio packet
+
+cargo: optional mcuio packet (interrupt request from slave)
+
+Association request:
+ 0           1           16
++-----------+-------------+
+|           |             |
+|  ptype    |  slave name |
+|           |             |
++-----------+-------------+
+
+ptype = 2
+slave name: 16 bytes (zero terminated string. If name is shorter than 16
+bytes, it is 0-padded to 16 bytes).
+
+Association reply
+ 0           1           2             3        7
++-----------+-----------+-------------+-----------+
+|           |           |             |           |
+| ptype     | status    | mcuio dev   | hw addr   |
+|           |           |             |           |
++-----------+-----------+-------------+-----------+
+
+ptype = 3
+status: 0 for OK, or error code
+mcuio dev: mcuio device number
+hw addr: hardware address of node
